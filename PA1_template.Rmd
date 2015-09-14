@@ -5,14 +5,38 @@ output:
     keep_md: true
 ---
 
+In this report we analyze data from a personal activity monitoring device as described [here](README.md).
 
 ## Loading and preprocessing the data
 
+We will use the `dplyr` pckage to manipulate the data, so load it first.
 
+```{r}
+library(dplyr)
+```
+
+We load the data directly from the zip file, and turn it into a `tbl`.
+
+```{r}
+activity <- tbl_df(read.csv(file = unz(description = "activity.zip", filename = "activity.csv")))
+activity
+```
 
 ## What is mean total number of steps taken per day?
 
+We calculate the total number of steps taken per day, ignoring missing values.
 
+```{r}
+by_day <- activity %>% filter(!is.na(steps)) %>% group_by(date) %>% summarize(steps = sum(steps))
+by_day
+```
+
+We make a histogram of the total number of steps taken each day.
+
+```{r}
+library(ggplot2)
+ggplot(data = by_day, mapping = aes(x = steps)) + geom_histogram()
+```
 
 ## What is the average daily activity pattern?
 
