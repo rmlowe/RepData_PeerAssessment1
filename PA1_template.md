@@ -92,6 +92,24 @@ ggplot(data = by_day, mapping = aes(x = steps)) + geom_histogram()
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
+We calculate the mean and median of the total number of steps taken each day.
+
+
+```r
+summ <- by_day %>% summarize(mean = mean(steps), median = median(steps))
+summ
+```
+
+```
+## Source: local data frame [1 x 2]
+## 
+##       mean median
+##      (dbl)  (int)
+## 1 10766.19  10765
+```
+
+So the mean number of steps taken per day is 10766.19 and the median is 10765.
+
 ## What is the average daily activity pattern?
 
 
