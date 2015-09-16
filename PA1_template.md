@@ -56,8 +56,8 @@ We calculate the total number of steps taken per day, ignoring missing values.
 
 
 ```r
-by_day <- activity %>% filter(!is.na(steps)) %>% group_by(date) %>% summarize(steps = sum(steps))
-by_day
+by_date <- activity %>% filter(!is.na(steps)) %>% group_by(date) %>% summarize(steps = sum(steps))
+by_date
 ```
 
 ```
@@ -83,7 +83,11 @@ We make a histogram of the total number of steps taken each day.
 
 ```r
 library(ggplot2)
-ggplot(data = by_day, mapping = aes(x = steps)) + geom_histogram()
+ggplot(data = by_date, mapping = aes(x = steps)) +
+  geom_histogram() +
+  xlab("Steps taken") +
+  ylab("Count") +
+  ggtitle("Total number of steps taken per day")
 ```
 
 ```
@@ -96,7 +100,7 @@ We calculate the mean and median of the total number of steps taken each day.
 
 
 ```r
-summ <- by_day %>% summarize(mean = mean(steps), median = median(steps))
+summ <- by_date %>% summarize(mean = mean(steps), median = median(steps))
 summ
 ```
 
@@ -112,10 +116,65 @@ So the mean number of steps taken per day is 10766.19 and the median is 10765.
 
 ## What is the average daily activity pattern?
 
+We make a time series plot of the average number of steps taken for each time interval. First we need to find the mean number of steps for each interval, again ignoring missing data. Note that the `mutate` call derives from the interval format a simple number of minutes after midnight.
 
+
+```r
+by_interval <-
+  activity %>%
+  filter(!is.na(steps)) %>%
+  group_by(interval) %>%
+  summarize(steps = mean(steps)) %>%
+  mutate(minutes_after_midnight = 60 * (interval %/% 100) + interval %% 100)
+```
+
+Then we make the plot.
+
+
+```r
+ggplot(data = by_interval, mapping = aes(x = minutes_after_midnight, y = steps)) +
+  geom_line() +
+  xlab("Interval (minutes after midnight)") +
+  ylab("Average steps taken") +
+  ggtitle("Average daily activity pattern")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+
+Which of these intervals contains the maximum number of steps?
+
+
+```r
+by_interval$interval[which.max(by_interval$steps)]
+```
+
+```
+## [1] 835
+```
+
+This corresponds with the interval at 8:35 am.
 
 ## Imputing missing values
 
+We determine how many missing values are in the dataset.
 
+
+```r
+sum(is.na(activity$steps))
+```
+
+```
+## [1] 2304
+```
+
+Since we expect the daily activity pattern to be reasonable regular, it makes sense to impute missing values based on the mean for the same interval on other days. We fill in the missing data based on this strategy.
+
+
+```r
+imputed <- merge(x = activity, y = by_interval, by = "interval") %>%
+  mutate(steps = ifelse(is.na(steps.x), steps.y, steps.x))
+```
+
+Note that in the resulting dataset, `steps.x` is the original observed value (which might be `NA`); `steps.y` is the mean value that will be used for imputation if necessary; and `steps` is the final (possibly imputed) value.
 
 ## Are there differences in activity patterns between weekdays and weekends?
