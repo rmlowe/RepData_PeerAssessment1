@@ -93,8 +93,9 @@ sum(is.na(activity$steps))
 Since we expect the daily activity pattern to be reasonable regular, it makes sense to impute missing values based on the mean for the same interval on other days. We fill in the missing data based on this strategy.
 
 ```{r}
-imputed <- merge(x = activity, y = by_interval, by = "interval") %>%
+imputed <- tbl_df(merge(x = activity, y = by_interval, by = "interval")) %>%
   mutate(steps = ifelse(is.na(steps.x), steps.y, steps.x))
+imputed
 ```
 
 Note that in the resulting dataset, `steps.x` is the original observed value (which might be `NA`); `steps.y` is the mean value that will be used for imputation if necessary; and `steps` is the final (possibly imputed) value.

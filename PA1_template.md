@@ -171,8 +171,27 @@ Since we expect the daily activity pattern to be reasonable regular, it makes se
 
 
 ```r
-imputed <- merge(x = activity, y = by_interval, by = "interval") %>%
+imputed <- tbl_df(merge(x = activity, y = by_interval, by = "interval")) %>%
   mutate(steps = ifelse(is.na(steps.x), steps.y, steps.x))
+imputed
+```
+
+```
+## Source: local data frame [17,568 x 6]
+## 
+##    interval steps.x       date  steps.y minutes_after_midnight    steps
+##       (int)   (int)     (fctr)    (dbl)                  (dbl)    (dbl)
+## 1         0      NA 2012-10-01 1.716981                      0 1.716981
+## 2         0       0 2012-11-23 1.716981                      0 0.000000
+## 3         0       0 2012-10-28 1.716981                      0 0.000000
+## 4         0       0 2012-11-06 1.716981                      0 0.000000
+## 5         0       0 2012-11-24 1.716981                      0 0.000000
+## 6         0       0 2012-11-15 1.716981                      0 0.000000
+## 7         0       0 2012-10-20 1.716981                      0 0.000000
+## 8         0       0 2012-11-16 1.716981                      0 0.000000
+## 9         0       0 2012-11-07 1.716981                      0 0.000000
+## 10        0       0 2012-11-25 1.716981                      0 0.000000
+## ..      ...     ...        ...      ...                    ...      ...
 ```
 
 Note that in the resulting dataset, `steps.x` is the original observed value (which might be `NA`); `steps.y` is the mean value that will be used for imputation if necessary; and `steps` is the final (possibly imputed) value.
