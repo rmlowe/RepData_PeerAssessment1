@@ -196,4 +196,40 @@ imputed
 
 Note that in the resulting dataset, `steps.x` is the original observed value (which might be `NA`); `steps.y` is the mean value that will be used for imputation if necessary; and `steps` is the final (possibly imputed) value.
 
+Next we generate another histogram using the imputed values.
+
+
+```r
+by_date_imputed <- imputed %>% group_by(date) %>% summarize(steps = sum(steps))
+ggplot(data = by_date_imputed, mapping = aes(x = steps)) +
+  geom_histogram() +
+  xlab("Steps taken") +
+  ylab("Count") +
+  ggtitle("Total number of steps taken per day")
+```
+
+```
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+
+We recalculate the mean and median of the total number of steps taken each day.
+
+
+```r
+summ_imputed <- by_date_imputed %>% summarize(mean = mean(steps), median = median(steps))
+summ_imputed
+```
+
+```
+## Source: local data frame [1 x 2]
+## 
+##       mean   median
+##      (dbl)    (dbl)
+## 1 10766.19 10766.19
+```
+
+So the mean number of steps taken per day is 10766.19 and the median is 10766.19. As we would expect, imputation does not significantly affect the mean or median.
+
 ## Are there differences in activity patterns between weekdays and weekends?
