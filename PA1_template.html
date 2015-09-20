@@ -205,7 +205,7 @@ summ_imputed</code></pre>
 <div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
 <p>We add a <code>type</code> variable that tells whether the date is a weekday or a weekend day.</p>
-<p>Note that we use the <code>lubridate::wday</code> instead of <code>base::weekdays</code>. <code>base::weekdays`` returns a locale-specific string, so comparisons based on this value will fail if the locale changes. On the other hand,</code>lubridate::wday` by default returns a numeric value that is independant of locale.</p>
+<p>Note that we use the <code>lubridate::wday</code> instead of <code>base::weekdays</code>. <code>base::weekdays</code> returns a locale-specific string, so comparisons based on this value will fail if the locale changes. On the other hand, <code>lubridate::wday</code> by default returns a numeric value that is independant of locale.</p>
 <pre class="r"><code>library(lubridate)
 with_type &lt;- imputed %&gt;% mutate(type = factor(wday(date) %in% c(1, 7),
                                               levels = c(TRUE, FALSE),

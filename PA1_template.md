@@ -236,7 +236,7 @@ So the mean number of steps taken per day is 10766.19 and the median is 10766.19
 
 We add a `type` variable that tells whether the date is a weekday or a weekend day.
 
-Note that we use the `lubridate::wday` instead of `base::weekdays`. `base::weekdays`` returns a locale-specific string, so comparisons based on this value will fail if the locale changes. On the other hand, `lubridate::wday` by default returns a numeric value that is independant of locale.
+Note that we use the `lubridate::wday` instead of `base::weekdays`. `base::weekdays` returns a locale-specific string, so comparisons based on this value will fail if the locale changes. On the other hand, `lubridate::wday` by default returns a numeric value that is independant of locale.
 
 
 ```r
