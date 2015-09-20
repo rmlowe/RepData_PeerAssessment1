@@ -125,17 +125,17 @@ by_interval <-
   filter(!is.na(steps)) %>%
   group_by(interval) %>%
   summarize(steps = mean(steps)) %>%
-  mutate(minutes_after_midnight = 60 * (interval %/% 100) + interval %% 100)
+  mutate(interval_mins = 60 * (interval %/% 100) + interval %% 100)
 ```
 
 Then we make the plot.
 
 
 ```r
-ggplot(data = by_interval, mapping = aes(x = minutes_after_midnight, y = steps)) +
+ggplot(data = by_interval, mapping = aes(x = interval_mins, y = steps)) +
   geom_line() +
-  xlab("Interval (minutes after midnight)") +
-  ylab("Average steps taken") +
+  xlab("Interval") +
+  ylab("Number of steps") +
   ggtitle("Average daily activity pattern")
 ```
 
@@ -179,19 +179,19 @@ imputed
 ```
 ## Source: local data frame [17,568 x 6]
 ## 
-##    interval steps.x       date  steps.y minutes_after_midnight    steps
-##       (int)   (int)     (fctr)    (dbl)                  (dbl)    (dbl)
-## 1         0      NA 2012-10-01 1.716981                      0 1.716981
-## 2         0       0 2012-11-23 1.716981                      0 0.000000
-## 3         0       0 2012-10-28 1.716981                      0 0.000000
-## 4         0       0 2012-11-06 1.716981                      0 0.000000
-## 5         0       0 2012-11-24 1.716981                      0 0.000000
-## 6         0       0 2012-11-15 1.716981                      0 0.000000
-## 7         0       0 2012-10-20 1.716981                      0 0.000000
-## 8         0       0 2012-11-16 1.716981                      0 0.000000
-## 9         0       0 2012-11-07 1.716981                      0 0.000000
-## 10        0       0 2012-11-25 1.716981                      0 0.000000
-## ..      ...     ...        ...      ...                    ...      ...
+##    interval steps.x       date  steps.y interval_mins    steps
+##       (int)   (int)     (fctr)    (dbl)         (dbl)    (dbl)
+## 1         0      NA 2012-10-01 1.716981             0 1.716981
+## 2         0       0 2012-11-23 1.716981             0 0.000000
+## 3         0       0 2012-10-28 1.716981             0 0.000000
+## 4         0       0 2012-11-06 1.716981             0 0.000000
+## 5         0       0 2012-11-24 1.716981             0 0.000000
+## 6         0       0 2012-11-15 1.716981             0 0.000000
+## 7         0       0 2012-10-20 1.716981             0 0.000000
+## 8         0       0 2012-11-16 1.716981             0 0.000000
+## 9         0       0 2012-11-07 1.716981             0 0.000000
+## 10        0       0 2012-11-25 1.716981             0 0.000000
+## ..      ...     ...        ...      ...           ...      ...
 ```
 
 Note that in the resulting dataset, `steps.x` is the original observed value (which might be `NA`); `steps.y` is the mean value that will be used for imputation if necessary; and `steps` is the final (possibly imputed) value.
@@ -233,3 +233,52 @@ summ_imputed
 So the mean number of steps taken per day is 10766.19 and the median is 10766.19. As we would expect, imputation does not significantly affect the mean or median.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+We add a `type` variable that tells whether the date is a weekday or a weekend day.
+
+Note that we use the `lubridate::wday` instead of `base::weekdays`. `base::weekdays`` returns a locale-specific string, so comparisons based on this value will fail if the locale changes. On the other hand, `lubridate::wday` by default returns a numeric value that is independant of locale.
+
+
+```r
+library(lubridate)
+with_type <- imputed %>% mutate(type = factor(wday(date) %in% c(1, 7),
+                                              levels = c(TRUE, FALSE),
+                                              labels = c("weekend", "weekday")))
+with_type
+```
+
+```
+## Source: local data frame [17,568 x 7]
+## 
+##    interval steps.x       date  steps.y interval_mins    steps    type
+##       (int)   (int)     (fctr)    (dbl)         (dbl)    (dbl)  (fctr)
+## 1         0      NA 2012-10-01 1.716981             0 1.716981 weekday
+## 2         0       0 2012-11-23 1.716981             0 0.000000 weekday
+## 3         0       0 2012-10-28 1.716981             0 0.000000 weekend
+## 4         0       0 2012-11-06 1.716981             0 0.000000 weekday
+## 5         0       0 2012-11-24 1.716981             0 0.000000 weekend
+## 6         0       0 2012-11-15 1.716981             0 0.000000 weekday
+## 7         0       0 2012-10-20 1.716981             0 0.000000 weekend
+## 8         0       0 2012-11-16 1.716981             0 0.000000 weekday
+## 9         0       0 2012-11-07 1.716981             0 0.000000 weekday
+## 10        0       0 2012-11-25 1.716981             0 0.000000 weekend
+## ..      ...     ...        ...      ...           ...      ...     ...
+```
+
+Next we make a time series plot.
+
+
+```r
+by_interval_and_type <-
+  with_type %>%
+  group_by(type, interval_mins) %>%
+  summarize(steps = mean(steps))
+ggplot(data = by_interval_and_type, mapping = aes(x = interval_mins, y = steps)) +
+  geom_line() +
+  facet_grid(facets = type ~ .) +
+  xlab("Interval") +
+  ylab("Number of steps") +
+  ggtitle("Average daily activity pattern (weekend vs weekday)")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 

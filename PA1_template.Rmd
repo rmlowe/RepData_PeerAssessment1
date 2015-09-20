@@ -61,16 +61,16 @@ by_interval <-
   filter(!is.na(steps)) %>%
   group_by(interval) %>%
   summarize(steps = mean(steps)) %>%
-  mutate(minutes_after_midnight = 60 * (interval %/% 100) + interval %% 100)
+  mutate(interval_mins = 60 * (interval %/% 100) + interval %% 100)
 ```
 
 Then we make the plot.
 
 ```{r}
-ggplot(data = by_interval, mapping = aes(x = minutes_after_midnight, y = steps)) +
+ggplot(data = by_interval, mapping = aes(x = interval_mins, y = steps)) +
   geom_line() +
-  xlab("Interval (minutes after midnight)") +
-  ylab("Average steps taken") +
+  xlab("Interval") +
+  ylab("Number of steps") +
   ggtitle("Average daily activity pattern")
 ```
 
@@ -122,3 +122,29 @@ So the mean number of steps taken per day is `r format(summ_imputed$mean)` and t
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+We add a `type` variable that tells whether the date is a weekday or a weekend day.
+
+Note that we use the `lubridate::wday` instead of `base::weekdays`. `base::weekdays`` returns a locale-specific string, so comparisons based on this value will fail if the locale changes. On the other hand, `lubridate::wday` by default returns a numeric value that is independant of locale.
+
+```{r}
+library(lubridate)
+with_type <- imputed %>% mutate(type = factor(wday(date) %in% c(1, 7),
+                                              levels = c(TRUE, FALSE),
+                                              labels = c("weekend", "weekday")))
+with_type
+```
+
+Next we make a time series plot.
+
+```{r}
+by_interval_and_type <-
+  with_type %>%
+  group_by(type, interval_mins) %>%
+  summarize(steps = mean(steps))
+ggplot(data = by_interval_and_type, mapping = aes(x = interval_mins, y = steps)) +
+  geom_line() +
+  facet_grid(facets = type ~ .) +
+  xlab("Interval") +
+  ylab("Number of steps") +
+  ggtitle("Average daily activity pattern (weekend vs weekday)")
+```
